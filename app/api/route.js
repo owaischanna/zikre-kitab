@@ -9,6 +9,8 @@ export async function GET() {
         const csvData = await response.text();
         const lines = csvData.split('\n');
         const result = [];
+        
+        // Headers are cleaned to remove quotes and whitespace
         const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
 
         for (let i = 1; i < lines.length; i++) {
@@ -23,9 +25,13 @@ export async function GET() {
             });
             
             if (obj.Title) {
-                // We use the "Series" column value as the Category.
-                // If it's empty, we label it "Uncategorized"
-                obj.Category = obj.Series && obj.Series.trim() !== "" ? obj.Series.trim() : "Uncategorized";
+                // Map the Excel 'Series' column to 'Category'
+                // Handles trailing spaces in header common in Excel CSV exports
+                const seriesRaw = obj["Series"] || obj["Series "] || ""; 
+                obj.Category = seriesRaw.trim() !== "" ? seriesRaw.trim() : "General Archive";
+                
+                // Keep Views as numeric for sorting logic
+                obj.Views = parseInt(obj.Views) || 0;
                 result.push(obj);
             }
         }
