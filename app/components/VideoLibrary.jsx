@@ -24,30 +24,62 @@ export default function VideoLibrary() {
     
     const videosPerPage = 12;
 
+    // --- UPDATED CATEGORIES BASED ON EXCEL SERIES ---
     const categories = [
-        { id: 'All', name: 'All Videos', icon: '📚' },
-        { id: 'Media & Journalism', name: 'Media & Journalism', icon: '📰' },
-        { id: 'History & Legacy', name: 'History & Legacy', icon: '🏛️' },
-        { id: 'Finance & Business', name: 'Finance & Business', icon: '💼' },
-        { id: 'Religion & Books', name: 'Religion & Books', icon: '📖' },
-        { id: 'Archive', name: 'Archive', icon: '📦' },
+        { id: 'All', name: 'All Videos', icon: '🌍' },
+        { id: 'Afsana Zindagi Ka', name: 'Afsana Zindagi Ka', icon: '👤' },
+        { id: 'Book Reviews', name: 'Book Reviews', icon: '📚' },
+        { id: 'Shah Mohi-ul-Haq Columns', name: 'Shah Columns', icon: '✍️' },
+        { id: 'Yaad-e-Raftagan', name: 'Yaad-e-Raftagan', icon: '🕊️' },
+        { id: 'Selected Readings', name: 'Selected Readings', icon: '✨' },
+        { id: 'Archive', name: 'General Archive', icon: '📦' },
     ];
+
+    // --- HELPER TO MAP EXCEL SERIES TO UI CATEGORIES ---
+    const processVideos = (rawVideos) => {
+        return rawVideos.map(video => {
+            let category = 'Archive';
+            const series = video.Series || '';
+
+            if (series.includes('افسانہ زندگی کا')) {
+                category = 'Afsana Zindagi Ka';
+            } else if (series.includes('کتابوں پر تبصرہ') || series.includes('کتابوں کے آئینے میں')) {
+                category = 'Book Reviews';
+            } else if (series.includes('کالم شاہ محی الحق فاروقی کے')) {
+                category = 'Shah Mohi-ul-Haq Columns';
+            } else if (series.includes('یاد رفتگاں')) {
+                category = 'Yaad-e-Raftagan';
+            } else if (series.includes('منتخب تحریں')) {
+                category = 'Selected Readings';
+            }
+
+            return { ...video, Category: category };
+        });
+    };
 
     useEffect(() => {
         async function loadVideos() {
             try {
                 const res = await fetch('/api');
                 const data = await res.json();
-                if (Array.isArray(data)) setVideos(data);
-            } catch (err) { console.error(err); }
-            finally { setLoading(false); }
+                if (Array.isArray(data)) {
+                    const processed = processVideos(data);
+                    setVideos(processed);
+                }
+            } catch (err) { 
+                console.error("Failed to load archive:", err); 
+            } finally { 
+                setLoading(false); 
+            }
         }
         loadVideos();
     }, []);
 
     const categoryCounts = useMemo(() => {
         const counts = { All: videos.length };
-        for (const v of videos) { counts[v.Category] = (counts[v.Category] || 0) + 1; }
+        videos.forEach(v => {
+            counts[v.Category] = (counts[v.Category] || 0) + 1;
+        });
         return counts;
     }, [videos]);
 
@@ -70,7 +102,7 @@ export default function VideoLibrary() {
     const filteredVideos = useMemo(() => {
         let result = selectedCat === 'All' ? [...videos] : videos.filter(v => v.Category === selectedCat);
         if (searchQuery.trim()) {
-            const fuse = new Fuse(result, { keys: ['Title'], threshold: 0.4 });
+            const fuse = new Fuse(result, { keys: ['Title', 'Guest', 'Tag 1'], threshold: 0.4 });
             result = fuse.search(searchQuery).map(r => r.item);
         }
         return result.sort((a, b) => {
@@ -110,7 +142,6 @@ export default function VideoLibrary() {
     return (
         <div className="h-screen flex flex-col bg-slate-50 overflow-hidden font-sans relative">
             
-            {/* --- TOP HEADER (Polished) --- */}
             <header className="h-20 flex-shrink-0 bg-white border-b border-slate-200 z-[60] flex items-center px-4 md:px-8 justify-between gap-6 shadow-sm">
                 <div className="flex items-center gap-4">
                     <button onClick={() => setShowMobileFilters(true)} className="lg:hidden p-2.5 bg-slate-50 rounded-xl hover:bg-slate-100 active:scale-90 transition-all">
@@ -122,16 +153,15 @@ export default function VideoLibrary() {
                         </div>
                         <div className="leading-tight">
                             <h1 className="text-xl font-black tracking-tighter text-slate-900">ZIKRE KITAB</h1>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">The Archive</p>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">Library & Archive</p>
                         </div>
                     </div>
                 </div>
 
-                {/* Desktop Search */}
                 <div className="hidden lg:block relative flex-1 max-w-2xl">
                     <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 ${isPending ? 'text-red-500 animate-pulse' : 'text-slate-400'}`} />
                     <input
-                        type="text" placeholder="Search archive instantly..." className="w-full p-3.5 pl-12 rounded-2xl bg-slate-100 border-none focus:ring-4 focus:ring-red-600/10 text-sm transition-all focus:bg-white"
+                        type="text" placeholder="Search titles, guests, or series..." className="w-full p-3.5 pl-12 rounded-2xl bg-slate-100 border-none focus:ring-4 focus:ring-red-600/10 text-sm transition-all focus:bg-white"
                         value={query} onChange={handleSearchChange} dir="auto"
                     />
                 </div>
@@ -144,11 +174,10 @@ export default function VideoLibrary() {
             </header>
 
             <div className="flex flex-1 overflow-hidden relative">
-                {/* SIDEBAR */}
                 <aside className="hidden lg:block w-72 h-full bg-white border-r border-slate-200 p-6 overflow-y-auto">
                     <div className="space-y-8">
                         <div>
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 border-l-4 border-red-600 pl-3">Library Categories</h3>
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 border-l-4 border-red-600 pl-3">Series Collections</h3>
                             <div className="space-y-1">
                                 {categories.map(cat => (
                                     <button key={cat.id} onClick={() => {setSelectedCat(cat.id); setCurrentPage(1);}}
@@ -161,17 +190,16 @@ export default function VideoLibrary() {
                         </div>
 
                         <div className="pt-6 border-t border-slate-100">
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-l-4 border-slate-200 pl-3">Display Order</h3>
+                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 border-l-4 border-slate-200 pl-3">Sort By</h3>
                             <select className="w-full p-4 bg-slate-50 border-none rounded-2xl font-bold text-xs outline-none focus:ring-2 focus:ring-red-100 appearance-none" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                                <option value="views">🔥 Most Popular</option>
-                                <option value="newest">📅 Recent Uploads</option>
-                                <option value="title">🔤 Alphabetical</option>
+                                <option value="views">🔥 Most Viewed</option>
+                                <option value="newest">📅 Latest First</option>
+                                <option value="title">🔤 Title A-Z</option>
                             </select>
                         </div>
                     </div>
                 </aside>
 
-                {/* SCROLLABLE MAIN CONTENT */}
                 <main className="flex-1 h-full overflow-y-auto p-4 md:p-8 pb-32 lg:pb-8 custom-scrollbar scroll-smooth">
                     <div className="max-w-6xl mx-auto">
                         <div className={`grid gap-8 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-3' : 'grid-cols-1'}`}>
@@ -216,7 +244,6 @@ export default function VideoLibrary() {
                                 );
                             })}
                         </div>
-                        {/* Pagination Section */}
                         {totalPages > 1 && (
                             <div className="flex justify-center items-center gap-4 mt-16 mb-20">
                                 <button disabled={currentPage === 1} onClick={() => {setCurrentPage(p => p - 1); document.querySelector('main').scrollTo(0,0)}} className="p-4 bg-white rounded-2xl shadow hover:bg-slate-50 disabled:opacity-20 transition-all border border-slate-100"><ChevronLeft/></button>
@@ -227,8 +254,6 @@ export default function VideoLibrary() {
                     </div>
                 </main>
 
-                {/* --- SMART MOBILE SEARCH BAR --- */}
-                {/* Iska logic: focus hone par ye upar shift ho jayega smoothly */}
                 <div className="lg:hidden fixed bottom-6 left-0 right-0 px-4 z-[100] transition-all duration-500 focus-within:bottom-[auto] focus-within:top-4">
                     <div className="max-w-md mx-auto relative group">
                         <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-pink-600 rounded-[2.2rem] blur opacity-20 group-focus-within:opacity-40 transition duration-1000"></div>
@@ -237,11 +262,11 @@ export default function VideoLibrary() {
                                 {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                             </div>
                             <input 
-                                type="text" placeholder="Start typing to search..." 
+                                type="text" placeholder="Search archive..." 
                                 className="flex-1 bg-transparent border-none outline-none text-slate-900 font-bold placeholder-slate-400 text-base"
                                 value={query} onChange={handleSearchChange} dir="auto"
                             />
-                            {query && <button onClick={() => setQuery('')} className="p-2 text-slate-300 hover:text-red-500 transition-colors"><X className="w-5 h-5" /></button>}
+                            {query && <button onClick={() => {setQuery(''); setSearchQuery('');}} className="p-2 text-slate-300 hover:text-red-500 transition-colors"><X className="w-5 h-5" /></button>}
                             <button onClick={() => setShowMobileFilters(true)} className="p-3.5 bg-slate-50 rounded-[1.4rem] text-slate-600 active:scale-95 transition-all">
                                 <Filter className="w-5 h-5" />
                             </button>
@@ -249,7 +274,6 @@ export default function VideoLibrary() {
                     </div>
                 </div>
 
-                {/* MOBILE DRAWER (Menu) */}
                 {showMobileFilters && (
                     <div className="fixed inset-0 z-[110] lg:hidden">
                         <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowMobileFilters(false)} />
@@ -274,10 +298,14 @@ export default function VideoLibrary() {
                                 <div className="pt-6 border-t">
                                     <h3 className="text-[10px] font-black text-slate-400 mb-4 tracking-widest">SORT RESULTS</h3>
                                     <div className="grid grid-cols-1 gap-2">
-                                        {['views', 'newest', 'title'].map(opt => (
-                                            <button key={opt} onClick={() => {setSortBy(opt); setShowMobileFilters(false);}}
-                                                className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${sortBy === opt ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-400'}`}>
-                                                {opt === 'views' ? 'Popularity' : opt}
+                                        {[
+                                            {id: 'views', label: 'Popularity'}, 
+                                            {id: 'newest', label: 'Recent'}, 
+                                            {id: 'title', label: 'Title'}
+                                        ].map(opt => (
+                                            <button key={opt.id} onClick={() => {setSortBy(opt.id); setShowMobileFilters(false);}}
+                                                className={`p-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all ${sortBy === opt.id ? 'bg-slate-900 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                                                {opt.label}
                                             </button>
                                         ))}
                                     </div>
