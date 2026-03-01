@@ -12,23 +12,26 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
+  // Required for resolving OG/Twitter image URLs correctly
+  metadataBase: new URL("https://zikrekitab.com"),
+
   // Primary Title
   title: {
     default: "Zikre Kitab | Book Reviews, Urdu Literature & Biographies",
     template: "%s | Zikre Kitab"
   },
-  
+
   // SEO Description (English + Urdu integrated for Google)
   description: "Explore Zikrekitab: Your premier digital destination for insightful book reviews, exclusive literary interviews, and inspiring life stories. اردو کتابوں کے بہترین تبصرے اور ادبی شخصیات کے انٹرویوز کے لیے وزٹ کریں۔",
-  
+
   // Comprehensive Keywords list
   keywords: [
-    "Zikrekitab", "Book Reviews", "Urdu Literature", "Literary Interviews", 
-    "Life Stories", "Biographies", "Reading Habits", "Urdu Book Reviews", 
-    "اردو کتابی تبصرے", "Author Interviews", "Literary Blog Pakistan", 
+    "Zikrekitab", "Book Reviews", "Urdu Literature", "Literary Interviews",
+    "Life Stories", "Biographies", "Reading Habits", "Urdu Book Reviews",
+    "اردو کتابی تبصرے", "Author Interviews", "Literary Blog Pakistan",
     "Best Urdu Novels", "Literary Heritage", "Book Recommendations"
   ],
-  
+
   authors: [{ name: "Tasnim Farouqi" }],
 
   // Favicon and Icons Fix

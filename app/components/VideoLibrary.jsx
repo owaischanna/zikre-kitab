@@ -1,47 +1,36 @@
 "use client";
-import React, { useState, useMemo, useEffect, useTransition } from 'react';
+import React, { useState, useMemo, useTransition } from 'react';
+import Link from 'next/link';
 import Fuse from 'fuse.js';
-import { 
-  Search, Copy, Check, Share2, Facebook, Instagram,
-  MessageCircle, Filter, Menu, X, ChevronLeft, ChevronRight,
-  Loader2, Eye, BookOpen, LayoutGrid, List, Flame, Folder
+import {
+    Search, Copy, Check, Share2, Facebook, Instagram,
+    MessageCircle, Filter, Menu, X, ChevronLeft, ChevronRight,
+    Loader2, Eye, BookOpen, LayoutGrid, List, Flame, Folder, Image, Home
 } from 'lucide-react';
 
-export default function VideoLibrary() {
-    const [videos, setVideos] = useState([]);
-    const [loading, setLoading] = useState(true);
+export default function VideoLibrary({ initialVideos = [], initialCategory = 'All' }) {
+    // Data is passed from the server component (SSR) — no client-side fetch needed
+    const [videos] = useState(initialVideos);
     const [query, setQuery] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [isPending, startTransition] = useTransition();
 
-    const [selectedCat, setSelectedCat] = useState('All');
+    const [selectedCat, setSelectedCat] = useState(initialCategory);
     const [copiedId, setCopiedId] = useState(null);
     const [activeShare, setActiveShare] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [showMobileFilters, setShowMobileFilters] = useState(false);
-    const [viewMode, setViewMode] = useState('grid'); 
+    const [viewMode, setViewMode] = useState('grid');
     const [sortBy, setSortBy] = useState('views');
-    
-    const videosPerPage = 12;
 
-    useEffect(() => {
-        async function loadVideos() {
-            try {
-                const res = await fetch('/api');
-                const data = await res.json();
-                if (Array.isArray(data)) setVideos(data);
-            } catch (err) { console.error(err); }
-            finally { setLoading(false); }
-        }
-        loadVideos();
-    }, []);
+    const videosPerPage = 12;
 
     const categories = useMemo(() => {
         const uniqueSeries = Array.from(new Set(videos.map(v => v.Category)));
         const dynamicCats = uniqueSeries.map(name => ({
             id: name,
             name: name,
-            icon: "📁" 
+            icon: "📁"
         }));
         return [{ id: 'All', name: 'All Videos', icon: '🌍' }, ...dynamicCats];
     }, [videos]);
@@ -89,12 +78,7 @@ export default function VideoLibrary() {
         return (match && match[2].length === 11) ? match[2] : null;
     };
 
-    if (loading) return (
-        <div className="h-screen bg-slate-50 flex flex-col items-center justify-center">
-            <Loader2 className="w-10 h-10 text-red-600 animate-spin" />
-            <p className="mt-4 font-black text-slate-400 uppercase tracking-widest text-[10px]">Syncing Dynamic Library...</p>
-        </div>
-    );
+
 
     return (
         <div className="h-screen flex flex-col bg-slate-50 overflow-hidden font-sans relative">
@@ -106,7 +90,13 @@ export default function VideoLibrary() {
                     </button>
                     <div className="flex items-center gap-2">
                         <div className="p-2 bg-gradient-to-br from-red-500 to-red-700 rounded-xl shadow-lg hidden sm:block">
-                            <BookOpen className="w-5 h-5 text-white" />
+                            <Image
+                                src="/kitab.png"
+                                alt="Zikre Kitab Logo"
+                                fill
+                                className="object-contain"
+                                priority // Is se logo jaldi load hoga
+                            />
                         </div>
                         <div className="leading-tight">
                             <h1 className="text-xl font-black tracking-tighter text-slate-900 uppercase">Zikre Kitab</h1>
@@ -122,7 +112,10 @@ export default function VideoLibrary() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} className="p-2.5 bg-slate-50 rounded-xl">
+                    <Link href="/" className="p-2.5 bg-slate-50 rounded-xl hover:bg-red-50 hover:text-red-600 transition-all" title="Back to Home">
+                        <Home className="w-5 h-5" />
+                    </Link>
+                    <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} className="p-2.5 bg-slate-50 rounded-xl hover:bg-slate-100 transition-all">
                         {viewMode === 'grid' ? <List className="w-5 h-5" /> : <LayoutGrid className="w-5 h-5" />}
                     </button>
                 </div>
@@ -136,7 +129,7 @@ export default function VideoLibrary() {
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 border-l-4 border-red-600 pl-3">Dynamic Collections</h3>
                             <div className="space-y-1">
                                 {categories.map(cat => (
-                                    <button key={cat.id} onClick={() => {setSelectedCat(cat.id); setCurrentPage(1);}}
+                                    <button key={cat.id} onClick={() => { setSelectedCat(cat.id); setCurrentPage(1); }}
                                         className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${selectedCat === cat.id ? 'bg-red-600 text-white shadow-xl shadow-red-200' : 'hover:bg-slate-50 text-slate-600'}`}>
                                         <div className="flex items-center gap-3"><span className="text-xl">{cat.icon}</span><span className="font-bold text-sm tracking-tight">{cat.name}</span></div>
                                         <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${selectedCat === cat.id ? 'bg-white/20' : 'bg-slate-100'}`}>{categoryCounts[cat.id] || 0}</span>
@@ -173,12 +166,12 @@ export default function VideoLibrary() {
                                         <div className="p-6 flex-1 flex flex-col">
                                             <div className="flex justify-between items-center mb-3">
                                                 <span className="text-[9px] font-black text-red-600 uppercase tracking-widest">{video.Category}</span>
-                                                <div className={`flex items-center gap-1 text-[10px] font-bold ${h.color}`}><Eye className="w-3.5 h-3.5"/> {Number(video.Views).toLocaleString()}</div>
+                                                <div className={`flex items-center gap-1 text-[10px] font-bold ${h.color}`}><Eye className="w-3.5 h-3.5" /> {Number(video.Views).toLocaleString()}</div>
                                             </div>
                                             <h3 className="font-bold text-sm text-slate-800 line-clamp-2 mb-6 h-10 leading-snug" dir="auto">{video.Title}</h3>
                                             <div className="mt-auto flex gap-2">
                                                 <a href={video['Video url']} target="_blank" className="flex-1 bg-red-600 text-white text-center py-3 rounded-2xl text-[10px] font-black hover:bg-black transition-all">WATCH NOW</a>
-                                                <button onClick={() => {navigator.clipboard.writeText(video['Video url']); setCopiedId(i); setTimeout(()=>setCopiedId(null),2000)}}
+                                                <button onClick={() => { navigator.clipboard.writeText(video['Video url']); setCopiedId(i); setTimeout(() => setCopiedId(null), 2000) }}
                                                     className={`px-5 py-3 rounded-2xl text-[10px] font-black transition-all ${copiedId === i ? 'bg-green-600 text-white shadow-lg' : 'bg-slate-50 text-slate-400'}`}>
                                                     {copiedId === i ? '✓' : '🔗'}
                                                 </button>
@@ -192,9 +185,9 @@ export default function VideoLibrary() {
                         {/* Pagination */}
                         {totalPages > 1 && (
                             <div className="flex justify-center items-center gap-4 mt-16 mb-20">
-                                <button disabled={currentPage === 1} onClick={() => {setCurrentPage(p => p - 1); document.querySelector('main').scrollTo(0,0)}} className="p-4 bg-white rounded-2xl border border-slate-100 disabled:opacity-20 transition-all"><ChevronLeft/></button>
+                                <button disabled={currentPage === 1} onClick={() => { setCurrentPage(p => p - 1); document.querySelector('main').scrollTo(0, 0) }} className="p-4 bg-white rounded-2xl border border-slate-100 disabled:opacity-20 transition-all"><ChevronLeft /></button>
                                 <span className="text-xs font-black text-slate-400">{currentPage} / {totalPages}</span>
-                                <button disabled={currentPage === totalPages} onClick={() => {setCurrentPage(p => p + 1); document.querySelector('main').scrollTo(0,0)}} className="p-4 bg-white rounded-2xl border border-slate-100 disabled:opacity-20 transition-all"><ChevronRight/></button>
+                                <button disabled={currentPage === totalPages} onClick={() => { setCurrentPage(p => p + 1); document.querySelector('main').scrollTo(0, 0) }} className="p-4 bg-white rounded-2xl border border-slate-100 disabled:opacity-20 transition-all"><ChevronRight /></button>
                             </div>
                         )}
                     </div>
@@ -209,7 +202,7 @@ export default function VideoLibrary() {
                                 {isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                             </div>
                             <input type="text" placeholder="Search archive..." className="flex-1 bg-transparent border-none outline-none text-slate-900 font-bold placeholder-slate-400 text-base" value={query} onChange={handleSearchChange} dir="auto" />
-                            {query && <button onClick={() => {setQuery(''); setSearchQuery('');}} className="p-2 text-slate-300"><X className="w-5 h-5" /></button>}
+                            {query && <button onClick={() => { setQuery(''); setSearchQuery(''); }} className="p-2 text-slate-300"><X className="w-5 h-5" /></button>}
                             <button onClick={() => setShowMobileFilters(true)} className="p-3.5 bg-slate-50 rounded-[1.4rem] text-slate-600"><Filter className="w-5 h-5" /></button>
                         </div>
                     </div>
@@ -222,11 +215,11 @@ export default function VideoLibrary() {
                         <div className="absolute top-0 left-0 w-80 h-full bg-white shadow-2xl flex flex-col p-8 animate-in slide-in-from-left duration-500">
                             <div className="flex justify-between items-center mb-10 pb-4 border-b">
                                 <h2 className="font-black italic text-2xl text-slate-900">ARCHIVE</h2>
-                                <button onClick={() => setShowMobileFilters(false)} className="p-3 bg-slate-50 rounded-2xl"><X className="w-6 h-6 text-slate-400"/></button>
+                                <button onClick={() => setShowMobileFilters(false)} className="p-3 bg-slate-50 rounded-2xl"><X className="w-6 h-6 text-slate-400" /></button>
                             </div>
                             <div className="flex-1 overflow-y-auto space-y-2 no-scrollbar">
                                 {categories.map(cat => (
-                                    <button key={cat.id} onClick={() => {setSelectedCat(cat.id); setShowMobileFilters(false); setCurrentPage(1);}} 
+                                    <button key={cat.id} onClick={() => { setSelectedCat(cat.id); setShowMobileFilters(false); setCurrentPage(1); }}
                                         className={`w-full flex justify-between items-center p-5 rounded-[1.8rem] font-bold text-sm transition-all ${selectedCat === cat.id ? 'bg-red-600 text-white shadow-2xl shadow-red-200' : 'bg-slate-50 text-slate-600 active:bg-slate-100'}`}>
                                         <div className="flex items-center gap-4"><span>{cat.icon}</span><span>{cat.name}</span></div>
                                         <span className={`text-[10px] font-black px-2 py-1 rounded-lg ${selectedCat === cat.id ? 'bg-white/20' : 'bg-white shadow-sm'}`}>{categoryCounts[cat.id] || 0}</span>
