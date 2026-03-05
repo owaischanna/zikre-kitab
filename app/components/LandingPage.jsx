@@ -290,6 +290,129 @@ export default function LandingPage({
                 </div>
             </section>
 
+            {/* ─── QUICK ACCESS — SCROLL BANNERS (Design Inspired) ── */}
+            <section className="py-14 sm:py-20 islamic-pattern-bg relative overflow-hidden">
+                {/* Decorative corner ornaments */}
+                <div className="absolute top-0 left-0 w-32 h-32 opacity-10 pointer-events-none" aria-hidden="true">
+                    <div className="w-full h-full border-t-4 border-l-4 border-amber-700/30 rounded-tl-3xl" />
+                </div>
+                <div className="absolute bottom-0 right-0 w-32 h-32 opacity-10 pointer-events-none" aria-hidden="true">
+                    <div className="w-full h-full border-b-4 border-r-4 border-amber-700/30 rounded-br-3xl" />
+                </div>
+
+                <div className="max-w-6xl mx-auto px-4 sm:px-6">
+                    {/* Section heading */}
+                    <div className="text-center mb-10 sm:mb-14">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/80 backdrop-blur border border-amber-200/80 rounded-full text-amber-800 text-[10px] font-bold uppercase tracking-widest mb-4">
+                            <Sparkles className="w-3.5 h-3.5 text-red-600" /> Quick Access
+                        </div>
+                        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight">
+                            Browse Popular Topics
+                        </h2>
+                        <p className="text-amber-900/60 text-sm sm:text-base mt-3 max-w-lg mx-auto">
+                            Jump straight to your favourite collection — each banner takes you directly to filtered sessions.
+                        </p>
+                    </div>
+
+                    {/* Scroll banner grid — 2 columns */}
+                    <div className="grid grid-cols-2 gap-4 sm:gap-5 max-w-3xl mx-auto mb-10 sm:mb-14">
+                        {displayCats.slice(0, 10).map((cat, i) => {
+                            const emoji = CAT_EMOJI[cat.name] || "📁";
+                            return (
+                                <Link
+                                    key={cat.id}
+                                    href={`/library?category=${encodeURIComponent(cat.id)}`}
+                                    className="scroll-banner"
+                                >
+                                    <span className="ribbon-highlight top" />
+                                    <span className="ribbon-highlight bottom" />
+                                    <span className="flex items-center gap-2 justify-center flex-wrap">
+                                        <span className="text-lg sm:text-xl">{emoji}</span>
+                                        <span className="text-xs sm:text-sm leading-tight" dir="auto">{cat.name}</span>
+                                        <span className="text-[9px] sm:text-[10px] opacity-70 font-normal">({cat.count})</span>
+                                    </span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+
+                    {/* Golden search bar */}
+                    <div className="max-w-xl mx-auto">
+                        <Link
+                            href="/library"
+                            className="golden-search flex items-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4"
+                        >
+                            <Search className="w-5 h-5 text-amber-900/60 flex-shrink-0" />
+                            <span className="text-amber-900/80 text-sm sm:text-base font-bold">
+                                Search All {totalVideos.toLocaleString()} Sessions...
+                            </span>
+                            <ArrowRight className="w-4 h-4 text-amber-900/50 ml-auto" />
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/* ─── ZIKREKITAB FAMILY GROUPS ─────────────────────── */}
+            <section className="py-12 sm:py-16 bg-gradient-to-b from-slate-50 via-white to-slate-50 border-y border-slate-100">
+                <div className="max-w-5xl mx-auto px-4 sm:px-6">
+                    <div className="text-center mb-8 sm:mb-12">
+                        <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-slate-100 rounded-full text-slate-600 text-[10px] font-bold uppercase tracking-widest mb-4">
+                            <Users className="w-3.5 h-3.5 text-red-500" /> Also Check
+                        </div>
+                        <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                            Zikrekitab Family Groups
+                        </h2>
+                        <p className="text-slate-500 text-sm mt-2 max-w-md mx-auto">
+                            Explore our sister initiatives for holistic learning and growth.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-8 max-w-2xl mx-auto">
+                        {/* ASK Card */}
+                        <a
+                            href="https://www.youtube.com/@ZikreKitab"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="family-card ask-card group"
+                        >
+                            <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
+                            <div className="relative">
+                                <div className="text-4xl sm:text-5xl font-black tracking-tighter mb-1" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.3)' }}>
+                                    ASK
+                                </div>
+                                <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wider opacity-90">
+                                    Attitude, Skills &amp; Knowledge
+                                </div>
+                                <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-[10px] font-bold opacity-80 group-hover:opacity-100 transition-opacity">
+                                    <Play className="w-3 h-3" /> Watch Now
+                                </div>
+                            </div>
+                        </a>
+
+                        {/* BLJ Card */}
+                        <a
+                            href="https://www.youtube.com/@ZikreKitab"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="family-card blj-card group"
+                        >
+                            <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
+                            <div className="relative">
+                                <div className="text-4xl sm:text-5xl font-black tracking-tighter mb-1" style={{ textShadow: '2px 2px 8px rgba(0,0,0,0.3)' }}>
+                                    BLJ
+                                </div>
+                                <div className="text-[10px] sm:text-xs font-bold uppercase tracking-wider opacity-90">
+                                    Beyond Legal Jargon
+                                </div>
+                                <div className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-[10px] font-bold opacity-80 group-hover:opacity-100 transition-opacity">
+                                    <Play className="w-3 h-3" /> Watch Now
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
             {/* ─── COLLECTIONS GRID ─────────────────────────────── */}
             <section id="collections" className="py-14 sm:py-20 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6">
